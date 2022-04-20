@@ -4,6 +4,11 @@
         "ignore": []
     },
     "miniprogramRoot": "miniprogram/",
+    "scripts": {
+        "beforeCompile": "npm run tsc",
+        "beforePreview": "npm run tsc",
+        "beforeUpload": "npm run tsc"
+    },
     "compileType": "miniprogram",
     "projectname": "coolcar",
     "setting": {
@@ -49,5 +54,6 @@
     "simulatorType": "wechat",
     "simulatorPluginLibVersion": {},
     "appid": "wx851020fe449a84e2",
+    "libVersion": "2.23.4",
     "condition": {}
 }
