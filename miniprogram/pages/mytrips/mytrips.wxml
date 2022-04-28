@@ -38,7 +38,10 @@
     bindscroll="onMainScroll"
     >
         <!-- scroll-top="{{scrollTop}}" -->
-        <view wx:for="{{mainItems}}" wx:for-item="item" wx:key="id" class="bg-white margin-bottom margin-lr padding-bottom trip main-item" id="{{item.id}}" data-nav-id="{{item.navId}}">
+        <view wx:for="{{mainItems}}" wx:for-item="item" wx:key="id" class="bg-white margin-bottom margin-lr padding-bottom trip main-item" id="{{item.id}}" 
+        data-nav-id="{{item.navId}}"
+        data-nav-scroll-id="{{item.navScrollId}}"
+        >
             <view class="cu-bar solid-bottom padding-right">
                 <view class="action">
                     <text class="cuIcon-title text-green"></text>

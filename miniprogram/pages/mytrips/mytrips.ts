@@ -12,6 +12,7 @@ interface Trip{
 interface MainItem {
     id: string
     navId: string
+    navScrollId:string
     data: Trip
 }
 
@@ -75,7 +76,8 @@ Page({
         //scrollIntoView:''
         mainScroll:'',
         navCount:1,
-        navSel:''
+        navSel:'',
+        navScroll:'',
     },
     onRegisterTap(){
         wx.navigateTo({
@@ -107,13 +109,18 @@ Page({
         const mainItems: MainItem[] = []
         const navItems: NavItem[] = []
         let navSel = ''
+        let prevNav = ''
         for(let i = 0; i < 100; i++){
             const mainId = 'main-' + i
             const navId = 'nav-' + i
             const tripId = (10001+i).toString()
+            if (!prevNav){
+                prevNav = navId
+            }
             mainItems.push({
                 id:mainId,
                 navId: navId,
+                navScrollId:prevNav,
                 data:{
                     id:tripId,
                     start:'东方明珠',
@@ -132,6 +139,7 @@ Page({
             if(i === 0){
                 navSel = navId
             }
+            prevNav = navId
         }
         this.setData({
             mainItems,
@@ -163,7 +171,8 @@ Page({
             return
         }
         this.setData({
-            navSel:selItem.dataset.navId
+            navSel:selItem.dataset.navId,
+            navScroll:selItem.dataset.navScrollId
         })
     },
     /**
