@@ -1,0 +1,39 @@
+<view class="container">
+    <view class="lic-tmpl" wx:if="{{!licImgURL}}" bindtap="onUploadLic">
+        <image class="lic-tmpl-img" src="/resources/lic.png"></image>
+        <view class="cuIcon-camerafill lg text-gray"></view>
+        <view class="instruction">请上传驾照</view>
+    </view>
+    <block wx:else>
+        <view class="lic-tmpl">
+            <image class="stretch" src="{{licImgURL}}" />
+        </view>
+        <view class="lic-form margin-top-lg">
+            <!-- <form class="margin-top-lg"> -->
+                <view class="cu-form-group">
+                    <view class="title">姓名</view>
+                    <input placeholder="姓名" value="{{name}}" disabled="{{state!=='UNSUBMITTED'}}"></input>
+                </view>
+                <view class="cu-form-group">
+                    <view class="title">性别</view>
+                    <picker bindchange="onGenderChange" value="{{genderIndex}}" range="{{genders}}" disabled="{{state!=='UNSUBMITTED'}}">
+                        <view class="picker">{{genders[genderIndex]}}</view>
+                    </picker>
+                </view>
+                <view class="cu-form-group">
+                    <view class="title">驾驶证号</view>
+                    <input placeholder="驾驶证号" value="{{licNo}}" disabled="{{state!=='UNSUBMITTED'}}"></input>
+                </view>
+                <view class="cu-form-group">
+                    <view class="title">出生日期</view>
+                    <picker mode="date" value="{{birthday}}" bindchange="onBirthday" disabled="{{state!=='UNSUBMITTED'}}">
+                        <view class="picker">{{birthday}}</view>
+                    </picker>
+                </view>
+            <!-- </form> -->
+        </view>
+        <button wx:if="{{state==='UNSUBMITTED'}}" class="cu-btn bg-red margin-tb-sm lg margin-top-xl" bindtap="onSubmit">递交审查</button>
+        <button wx:if="{{state==='PENDING'}}" class="cu-btn block line-blue lg margin-top-xl" disabled="{{true}}">审查中</button>
+        <button wx:if="{{state==='VERIFIED'}}" class="cu-btn bg-red margin-tb-sm lg margin-top-xl" bindtap="onResubmit">重新审查</button>
+    </block>
+</view>
