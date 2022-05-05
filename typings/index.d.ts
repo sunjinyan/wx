@@ -2,7 +2,10 @@
 
 interface IAppOption {
   globalData: {
-    userInfo?: WechatMiniprogram.UserInfo,
+    userInfo?: Promise<WechatMiniprogram.UserInfo>,
+    // userInfo?: WechatMiniprogram.UserInfo,
   }
-  userInfoReadyCallback?: WechatMiniprogram.GetUserInfoSuccessCallback,
+  //userInfoReadyCallback?: WechatMiniprogram.GetUserInfoSuccessCallback,
+  resolveUserInfo(userInfo: WechatMiniprogram.UserInfo): void
+  rejectUserInf(err?: any):void
 }

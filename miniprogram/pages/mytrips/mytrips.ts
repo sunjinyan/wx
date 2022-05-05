@@ -102,7 +102,7 @@ Page({
         this.populateTrips()
         const userInfo = await getApp<IAppOption>().globalData.userInfo
         this.setData({
-            avatarURL:userInfo.avatarUrl
+            avatarURL:userInfo?.avatarUrl
         })
     },
     populateTrips(){

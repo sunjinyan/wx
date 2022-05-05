@@ -108,7 +108,7 @@ App<IAppOption>({//IAppOption是泛型
   resolveUserInfo(userInfo: WechatMiniprogram.UserInfo){
     resolveUserInfo(userInfo)
   },
-  rejectUserInfo(err?: any){
+  rejectUserInf(err?: any){
     rejectUserInfo(err)
   },
 })

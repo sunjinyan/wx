@@ -66,9 +66,15 @@ Page({
     })
   },
   async onLoad(){
+    // wx.request({
+    //   url:"http://localhost:8080/trip/123",
+    //   method:"GET",
+    //   success:console.log,
+    //   fail:console.error
+    // })
     const userInfo = await app.globalData.userInfo
     this.setData({
-      avatarURL:userInfo.avatarUrl
+      avatarURL:userInfo?.avatarUrl
     })
   },
   onShow(){

@@ -11,6 +11,9 @@
   "license": "",
   "devDependencies": {
     "miniprogram-api-typings": "^2.8.3-1",
-    "typescript": "^4.6.3"
+    "typescript": "^4.6.4"
+  },
+  "dependencies": {
+    "npm": "^8.9.0"
   }
 }

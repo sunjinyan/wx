@@ -24,7 +24,7 @@ Page({
         const userInfo = await getApp<IAppOption>().globalData.userInfo
         wx.getStorageSync(shareLocationKey)
         this.setData({
-            avatarURL:userInfo.avatarUrl,
+            avatarURL:userInfo?.avatarUrl,
             shareLocation:wx.getStorageSync(shareLocationKey)  || false
         })
     },
