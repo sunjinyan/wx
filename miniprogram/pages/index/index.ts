@@ -1,5 +1,6 @@
 // index.ts
 
+import { IAppOption } from "../../appoption"
 import { routing } from "../../utils/routing"
 
 // 获取应用实例
