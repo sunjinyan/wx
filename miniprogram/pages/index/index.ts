@@ -1,6 +1,8 @@
 // index.ts
 
 import { IAppOption } from "../../appoption"
+import { rental } from "../../service/proto_gen/rental/rental_pb"
+import { TripService } from "../../service/trip"
 import { routing } from "../../utils/routing"
 
 // 获取应用实例
@@ -112,9 +114,21 @@ Page({
     }
     moveCars()
   },
-  onScanTap(){
+  async onScanTap(){
+    const trips = await TripService.GetTrips(rental.v1.TripStatus.IN_PROGRESS)
+    if((trips.trips?.length || 0) > 0){
+      await this.selectComponent('#tripModal').showModal()
+      wx.navigateTo({
+        url:routing.driving({
+          trip_id: trips.trips![0].id!,
+        }),
+      })
+      return
+    } 
+
     wx.scanCode({
-      success:res=>{
+      success:async res=>{
+        await this.selectComponent('#licModal').showModal()
         console.log(res)
         const carID = 'car123'
         //const redirectURL = `/pages/lock/lock?car_id=${carID}`

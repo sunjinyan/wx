@@ -1,10 +1,12 @@
 import { IAppOption } from "../../appoption"
+import { rental } from "../../service/proto_gen/rental/rental_pb"
+import { TripService } from "../../service/trip"
 import { routing } from "../../utils/routing"
 
 // pages/lock/lock.ts
 const shareLocationKey = "share_location"
 Page({
-
+    carID:'',
     /**
      * 页面的初始数据
      */
@@ -20,6 +22,7 @@ Page({
     async onLoad(opt:Record<'car_id',string>) {
         const o: routing.LockOpts = opt
         
+        this.carID = o.car_id
         console.log(o.car_id)
         
         const userInfo = await getApp<IAppOption>().globalData.userInfo
@@ -32,7 +35,7 @@ Page({
     onUnlockTap(){
         wx.getLocation({
             type:'gcj02',
-            success:loc=>{
+            success: async loc=>{
                 console.log('starting a trip',{
                     location:{
                         latitude: loc.latitude,
@@ -41,7 +44,41 @@ Page({
                     avatarURL:this.data.shareLocationKey? this.data.avatarURL:'',
                     carID:''
                 })
-                const tripID = 'trip456'
+                
+                if (!this.carID) {
+                    console.error("no carID specified")
+                    return
+                }
+
+                //console.log("============================",loc)
+                let trip: rental.v1.ITripEntity
+                try {
+                    trip = await TripService.createTrip({
+                        //start:"abc"
+                        start:{
+                            latitude:loc.latitude,
+                            longitude:loc.longitude
+                        },
+                        carId:this.carID
+                    })
+
+                    if (!trip.id) {
+                        console.error("no trip id specified")
+                        return
+                    }
+                } catch (err) {
+                    wx.showToast({
+                        title:'创建行程失败',
+                        icon:'none',
+                    })
+                    return
+                }
+
+                
+                //return
+                
+
+                //const tripID = 'trip456'
                 wx.showLoading({
                     title:"开锁中",
                     mask:true,
@@ -51,7 +88,7 @@ Page({
                     wx.redirectTo({
                         //url: `/pages/driving/driving?trip_id=${tripID}`,
                         url: routing.driving({
-                            trip_id:tripID
+                            trip_id:trip.id!
                         }),
                         complete:()=>{
                             wx.hideLoading()

@@ -1,7 +1,11 @@
 import { IAppOption } from "../../appoption"
+import { rental } from "../../service/proto_gen/rental/rental_pb"
+import { TripService } from "../../service/trip"
+import { formatDuration, formatFee } from "../../utils/format"
 import { routing } from "../../utils/routing"
 interface Trip{
     id: string
+    shortId:string
     start: string
     end:string
     duration:string
@@ -32,11 +36,21 @@ interface MainItemQueryResult {
     }
 }
 
+const tripStatusMap = new Map([
+    [rental.v1.TripStatus.IN_PROGRESS,'进行中'],
+    [rental.v1.TripStatus.FINISHED,'已完成'],
+])
+
 // pages/mytrips/mytrips.ts
 Page({
     scrollStates:{
         mainItems:[] as MainItemQueryResult[]
     },
+    layoutResolver: undefined as ((value: unknown) => void)|undefined,
+    // layoutReady:{
+    //     promise:undefined as Promise<void>|undefined,
+    //     resolver:undefined as (()=>void)|undefined
+    // },
     /**
      * 页面的初始数据
      */
@@ -99,48 +113,94 @@ Page({
     /**
      * 生命周期函数--监听页面加载
      */
-    async onLoad() {
-        this.populateTrips()
-        const userInfo = await getApp<IAppOption>().globalData.userInfo
-        this.setData({
-            avatarURL:userInfo?.avatarUrl
+    onLoad() {
+       const layoutReady = new Promise((resolve)=>{
+            this.layoutResolver = resolve
         })
+        Promise.all([TripService.GetTrips(),layoutReady]).then(([trips])=>{
+            this.populateTrips(trips.trips!)
+        })
+        //const [res] = await Promise.all([TripService.GetTrips(),layoutReady])
+        //console.log(res)
+        //this.populateTrips(res.trips!)
+        //const userInfo = await getApp<IAppOption>().globalData.userInfo
+        getApp<IAppOption>().globalData.userInfo?.then(userInfo=>{
+            this.setData({
+                avatarURL:userInfo?.avatarUrl
+            })
+        })
+        
     },
-    populateTrips(){
+    populateTrips(trips:rental.v1.ITripEntity[]){
         const mainItems: MainItem[] = []
         const navItems: NavItem[] = []
         let navSel = ''
         let prevNav = ''
-        for(let i = 0; i < 100; i++){
+        for(let i = 0; i < trips.length; i++){
+            const trip = trips[i]
             const mainId = 'main-' + i
             const navId = 'nav-' + i
-            const tripId = (10001+i).toString()
+            //const tripId = (10001+i).toString()
+            const shortId = trip.id?.substring(trip.id.length-6)
+            
             if (!prevNav){
                 prevNav = navId
+            }
+            // distance:'27.0公里',
+            //         duration:'0时44分',
+            //         fee:'128.00元',
+            //         status:'已完成'
+            const tripData:Trip = {
+                id:trip.id!,
+                    shortId:'***'+shortId!,
+                    start:trip.trip?.start?.poiName||'未知',
+                    end:'',
+                    distance:'',
+                    duration:'',
+                    fee:'',
+                    status:tripStatusMap.get(trip.trip?.status!)||'未知'
+            }
+            const end = trip.trip?.end
+            if (end) {
+                tripData.end = end.poiName||'未知'
+                tripData.distance = end.kmDriven?.toFixed(1)+'公里'
+                tripData.fee = formatFee(end.feeCent || 0)
+                const dur = formatDuration((end.timestampSec || 0) - (trip.trip?.start?.timestampSec! || 0))
+                tripData.duration = `${dur.hh}时${dur.mm}分`
             }
             mainItems.push({
                 id:mainId,
                 navId: navId,
                 navScrollId:prevNav,
-                data:{
-                    id:tripId,
-                    start:'东方明珠',
-                    end:'迪士尼',
-                    distance:'27.0公里',
-                    duration:'0时44分',
-                    fee:'128.00元',
-                    status:'已完成'
-                }
+                // data:{
+                //     id:trip.id!,
+                //     shortId:'***'+shortId!,
+                //     start:trip.trip?.start?.poiName||'未知',
+                //     end:'迪士尼',
+                //     distance:'27.0公里',
+                //     duration:'0时44分',
+                //     fee:'128.00元',
+                //     status:'已完成'
+                // }
+                data:tripData
             })
             navItems.push({
                 id: navId,
                 mainId:mainId,
-                label:tripId
+                label:shortId||''
             })
             if(i === 0){
                 navSel = navId
             }
             prevNav = navId
+        }
+        console.log('nav count:',this.data.navCount)
+        for (let i = 0; i < this.data.navCount-1; i++) {
+            navItems.push({
+                id:'',
+                mainId:'',
+                label:'',
+            })
         }
         this.setData({
             mainItems,
@@ -185,6 +245,10 @@ Page({
             this.setData({
                 tripsHeight: height,
                 navCount:Math.round(height/50)
+            },()=>{
+                if (this.layoutResolver) {
+                    this.layoutResolver('')
+                }
             })
         }).exec()
     },
