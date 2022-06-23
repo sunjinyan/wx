@@ -1,6 +1,7 @@
 // index.ts
 
 import { IAppOption } from "../../appoption"
+import { ProfileService } from "../../service/profile"
 import { rental } from "../../service/proto_gen/rental/rental_pb"
 import { TripService } from "../../service/trip"
 import { routing } from "../../utils/routing"
@@ -127,34 +128,46 @@ Page({
     } 
 
     wx.scanCode({
-      success:async res=>{
-        await this.selectComponent('#licModal').showModal()
-        console.log(res)
-        const carID = 'car123'
+      success:async ()=>{
+        
+        const carID = '62b28303672e846b1d652929'
         //const redirectURL = `/pages/lock/lock?car_id=${carID}`
-        const redirectURL = routing.lock({
+        const lockURL = routing.lock({
           car_id:carID
         })
-        wx.navigateTo({
-          //url:`/pages/register/register?redirect=${encodeURIComponent(redirectURL)}`,
-          url:routing.redirect({
-            redirectURL:redirectURL
+        const prof = await ProfileService.getProfile()
+
+        if(prof.identityStatus === rental.v1.IdentityStatus.VERIFIED){
+          console.log(1232132141)
+          wx.navigateTo({
+            url:lockURL,
           })
-        })
+        }else{
+          console.log(678967867867)
+          await this.selectComponent('#licModal').showModal()
+          wx.navigateTo({
+            //url:`/pages/register/register?redirect=${encodeURIComponent(redirectURL)}`,
+            url:routing.redirect({
+              redirectURL:lockURL
+            })
+          })
+        }
       },
-      fail:() => {
-        const carID = 'car123'
-        //const redirectURL = `/pages/lock/lock?car_id=${carID}`
-        const redirectURL = routing.lock({
-          car_id:carID
-        })
-        wx.navigateTo({
-          // url:`/pages/register/register?redirect=${encodeURIComponent(redirectURL)}`,
-          url:routing.redirect({
-            redirectURL:redirectURL
-          }),
-        })
-      }
+      fail:console.error
+      // fail:() => {
+      //   const carID = 'car123'
+      //   //const redirectURL = `/pages/lock/lock?car_id=${carID}`
+      //   const redirectURL = routing.lock({
+      //     car_id:carID
+      //   })
+      //   console.log(83021983012038102)
+      //   wx.navigateTo({
+      //     // url:`/pages/register/register?redirect=${encodeURIComponent(redirectURL)}`,
+      //     url:routing.redirect({
+      //       redirectURL:redirectURL
+      //     }),
+      //   })
+      // }
     })
   },
   onMyTripsTap() {

@@ -117,4 +117,83 @@ export namespace Coolcar{
         })
     }
 
+    export interface UploadFileOpts {
+        localPath: string
+        url: string
+    }
+
+    export function uploadfile(o:UploadFileOpts):Promise<void> {
+        const data = wx.getFileSystemManager().readFileSync(o.localPath)
+
+        return new Promise((resolve,reject)=>{
+            wx.request({
+                method:"PUT",
+                data,
+                url:o.url,
+                success:res => {
+                    if (res.statusCode >= 400) {
+                        reject(res)   
+                    }else{
+                        resolve()
+                    }    
+                },
+                fail:reject,
+            })
+        })
+
+    }
+
+    export interface wxUploadFileOpts {
+        localPath: string
+    }
+
+
+    export interface UploadOption<UPREQ,UPRES>{
+        filePath: string,
+        url:string,
+        name:string,
+        formData:UPREQ,
+        respMarshaller:(r:object)=>UPRES
+    }
+
+    export function wxUploadFile<UPREQ,UPRES>(o: UploadOption<UPREQ, UPRES>, a: AuthOption):Promise<UPRES> {
+        const authOpt = a || {
+            attachAuthHeader:true,
+        }
+
+        return  new Promise((resolve, reject) => {
+            
+            const header : Record<string,any> = {
+                //'Content-Type': 'application/json;utf-8'
+            }//避免下边的header.authorization 点不出来东西
+            if (a.attachAuthHeader) {
+                if (authData.token && authData.expireMs >= Date.now()) {
+                    header.authorization = 'Bearer ' + authData.token
+                } else {
+                    reject(AUTH_ERR)
+                    return
+                }
+            }
+            if (authOpt.attachAuthHeader && authData.token && authData.expireMs >= Date.now()){
+                header.authorization = 'Bearer ' + authData.token
+            }
+            
+            wx.uploadFile({
+                url:serverAddr+o.url,
+                filePath: o.filePath,
+                name:o.name,
+                formData:o.formData,
+                header,
+                // headers : {
+                //      'timestamp': '1641704337',
+                //      'authorization': '1D63E6F1F8AF7BD629C684A144683226',
+                //      'Content-Type': 'application/json;utf-8'
+                // },
+                success:r => {
+                    resolve(o.respMarshaller(r))
+                },
+                fail:reject
+            })
+        })
+    }
 }
