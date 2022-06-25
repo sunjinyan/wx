@@ -1,7 +1,9 @@
 // index.ts
 
 import { IAppOption } from "../../appoption"
+import { CarService } from "../../service/car"
 import { ProfileService } from "../../service/profile"
+import { car } from "../../service/proto_gen/car/car_pb"
 import { rental } from "../../service/proto_gen/rental/rental_pb"
 import { TripService } from "../../service/trip"
 import { routing } from "../../utils/routing"
@@ -10,6 +12,7 @@ import { routing } from "../../utils/routing"
 const app = getApp<IAppOption>()
 
 Page({
+  socket:undefined as WechatMiniprogram.SocketTask |undefined,
   ifPageShowing:false,
   data:{
     avatarURL:"",
@@ -70,6 +73,34 @@ Page({
     })
   },
   async onLoad(){
+    
+    // this.socket = wx.connectSocket({
+    //   url:'ws://localhost:9090/ws',
+    // })
+
+
+    let msgCount = 0
+    this.socket = CarService.subscribe(function (msg: car.v1.ICarEntity) {
+    
+        msgCount++
+        console.log(msg)
+    })
+
+    // this.socket.onMessage(function (msg: WechatMiniprogram.SocketTaskOnMessageCallbackResult) {
+    
+    //     msgCount++
+    //     console.log(msg)
+    // })
+
+
+    // setInterval(()=>{
+    //   this.socket?.send({
+    //     data:JSON.stringify({
+    //       msg_received:msgCount
+    //     })
+    //   })
+    // },3000)
+
     // wx.request({
     //   url:"http://localhost:8080/trip/123",
     //   method:"GET",
@@ -171,6 +202,12 @@ Page({
     })
   },
   onMyTripsTap() {
+    this.socket?.close({
+      code:1006,
+      complete:res=>{
+        console.log(res)
+      }
+    })
     wx.navigateTo({
       url: routing.mytrips(),
     })

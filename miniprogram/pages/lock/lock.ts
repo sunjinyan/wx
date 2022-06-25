@@ -1,4 +1,6 @@
 import { IAppOption } from "../../appoption"
+import { CarService } from "../../service/car"
+import { car } from "../../service/proto_gen/car/car_pb"
 import { rental } from "../../service/proto_gen/rental/rental_pb"
 import { TripService } from "../../service/trip"
 import { routing } from "../../utils/routing"
@@ -7,6 +9,7 @@ import { routing } from "../../utils/routing"
 const shareLocationKey = "share_location"
 Page({
     carID:'',
+    carRefresher:0,
     /**
      * 页面的初始数据
      */
@@ -14,6 +17,7 @@ Page({
         userInfo:{},
         avatarURL:'',
         shareLocationKey:false,
+        shareLocation:""
     },
 
     /**
@@ -41,6 +45,7 @@ Page({
                         latitude: loc.latitude,
                         longitude:loc.longitude
                     },
+                    //todo: 需要双向绑定
                     avatarURL:this.data.shareLocationKey? this.data.avatarURL:'',
                     carID:''
                 })
@@ -84,17 +89,36 @@ Page({
                     mask:true,
                 })
                 
-                setTimeout(() => {
-                    wx.redirectTo({
-                        //url: `/pages/driving/driving?trip_id=${tripID}`,
-                        url: routing.driving({
-                            trip_id:trip.id!
-                        }),
-                        complete:()=>{
-                            wx.hideLoading()
-                        }
-                    })
+
+                //检查车的状态并开锁
+
+                this.carRefresher = setInterval(async ()=>{
+                    const c = await CarService.getCar(this.carID)
+                    if (c.status === car.v1.CarStatus.UNLOCKED){
+                        this.clearCarRefresher()
+                        wx.redirectTo({
+                            //url: `/pages/driving/driving?trip_id=${tripID}`,
+                            url: routing.driving({
+                                trip_id:trip.id!
+                            }),
+                            complete:()=>{
+                                wx.hideLoading()
+                            }
+                        })
+                    }
                 },2000)
+
+                // setTimeout(() => {
+                //     wx.redirectTo({
+                //         //url: `/pages/driving/driving?trip_id=${tripID}`,
+                //         url: routing.driving({
+                //             trip_id:trip.id!
+                //         }),
+                //         complete:()=>{
+                //             wx.hideLoading()
+                //         }
+                //     })
+                // },2000)
             },
             fail:()=>{
                 wx.showToast({
@@ -103,6 +127,12 @@ Page({
                 })
             }
         })
+    },
+    clearCarRefresher(){
+        if(this.carRefresher){
+            clearInterval(this.carRefresher)
+            this.carRefresher = 0
+        }
     },
     /**
      * 生命周期函数--监听页面初次渲染完成
@@ -129,7 +159,8 @@ Page({
      * 生命周期函数--监听页面卸载
      */
     onUnload() {
-
+        this.clearCarRefresher()
+        wx.hideLoading()
     },
 
     /**
@@ -160,7 +191,8 @@ Page({
         }
     },
     onShareLocation(e:any){
-        const shareLocation:boolean = e.detail.value
-        wx.setStorageSync(shareLocationKey,shareLocation)
+        this.data.shareLocation = e.detail.value
+        //const shareLocation:boolean = e.detail.value
+        wx.setStorageSync(shareLocationKey,this.data.shareLocation)
     }
 })
