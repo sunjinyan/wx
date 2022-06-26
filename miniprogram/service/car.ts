@@ -4,11 +4,18 @@ import { Coolcar } from "./request";
 
 export namespace CarService {
     export function subscribe(onMsg:(c:car.v1.ICarEntity)=>void) {
-        const socket = wx.connectSocket({
+        let socket = wx.connectSocket({
             url:Coolcar.wsAddr + "/ws"
         })
-
-
+        // let interval =  undefined
+        
+        // if (!socket) {
+        //     interval = setInterval(()=>{
+        //         socket = wx.connectSocket({
+        //             url:Coolcar.wsAddr + "/ws"
+        //         })
+        //     },1000)
+        // }
         socket.onMessage(msg => {
             const obj = JSON.parse(msg.data as string)
 
