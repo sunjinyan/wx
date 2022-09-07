@@ -118,9 +118,27 @@ Page({
         }
     },
     /**
+     * 生命周期函数--监听页面初次渲染完成
+     */
+     onReady() {
+        wx.createSelectorQuery().select('#heading').boundingClientRect(rect => {
+            const height =  wx.getSystemInfoSync().windowHeight - rect.height
+            this.setData({
+                tripsHeight: height,
+                navCount:Math.round(height/50)
+            },()=>{
+                if (this.layoutResolver) {
+                    this.layoutResolver('')
+                }
+            })
+        }).exec()
+    },
+    /**
      * 生命周期函数--监听页面加载
      */
     onLoad() {
+
+        //为了等待onReady中的页面初次渲染完成，确保不是onLoad先完成了
        const layoutReady = new Promise((resolve)=>{
             this.layoutResolver = resolve
         })
@@ -241,22 +259,6 @@ Page({
             navSel:selItem.dataset.navId,
             navScroll:selItem.dataset.navScrollId
         })
-    },
-    /**
-     * 生命周期函数--监听页面初次渲染完成
-     */
-    onReady() {
-        wx.createSelectorQuery().select('#heading').boundingClientRect(rect => {
-            const height =  wx.getSystemInfoSync().windowHeight - rect.height
-            this.setData({
-                tripsHeight: height,
-                navCount:Math.round(height/50)
-            },()=>{
-                if (this.layoutResolver) {
-                    this.layoutResolver('')
-                }
-            })
-        }).exec()
     },
     onNavItemTap(e:any){
         const mainId: string = e.currentTarget?.dataset?.mainId

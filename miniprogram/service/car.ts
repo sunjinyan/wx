@@ -16,6 +16,9 @@ export namespace CarService {
         //         })
         //     },1000)
         // }
+        if (socket == undefined) {
+            return
+        }
         socket.onMessage(msg => {
             const obj = JSON.parse(msg.data as string)
 
