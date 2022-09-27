@@ -3,7 +3,7 @@ import { auth } from "./proto_gen/auth/auth_pb"
 
 export namespace Coolcar{
 
-    export const serverAddr = 'http://localhost:8080'
+    export const serverAddr = 'http://coolcar.dreaminglifes.com'
     export const wsAddr = 'wx://localhost:9091'
     const AUTH_ERR = 'AUTH_ERR'
 
